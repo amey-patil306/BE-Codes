@@ -1,0 +1,247 @@
+Great! You're working on a comprehensive NLP task involving **tokenization**, **stemming**, and **lemmatization** using NLTK. Let me explain both:
+
+---
+
+## 🧠 VIVA THEORY: NLP Concepts from the Code
+
+### 1. **Tokenization**
+
+Tokenization is the process of breaking a text into individual components called tokens (words, phrases, or symbols).
+
+#### Types of Tokenizers Used:
+
+| Tokenizer                               | Description                                                                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **WhitespaceTokenizer**                 | Splits tokens based only on spaces. Doesn’t handle punctuation.                                                                 |
+| **RegexpTokenizer** (Punctuation-based) | Uses regular expressions. Here, `\w+` matches only word characters (removes punctuation).                                       |
+| **TreebankWordTokenizer**               | Follows Penn Treebank rules. Handles contractions (`I'm → I, 'm`) and punctuation properly.                                     |
+| **TweetTokenizer**                      | Designed for tweets. Preserves emoticons, hashtags, mentions.                                                                   |
+| **MWETokenizer**                        | Handles *Multi-Word Expressions* (e.g., 'New York'). Combines given word pairs into a single token like `tokenization_methods`. |
+
+---
+
+### 2. **Stemming**
+
+Stemming reduces a word to its root by removing suffixes. It may not always return a real word.
+
+#### Types of Stemmers:
+
+| Stemmer              | Description                                                            |
+| -------------------- | ---------------------------------------------------------------------- |
+| **Porter Stemmer**   | Oldest, simplest stemmer. Applies common rules for stripping suffixes. |
+| **Snowball Stemmer** | More advanced and aggressive than Porter. Supports multiple languages. |
+
+**Example**:
+For the word `"testing"`, Porter returns `"test"`, and Snowball also returns `"test"`.
+
+---
+
+### 3. **Lemmatization**
+
+Lemmatization returns the **dictionary (base)** form of a word (lemma), using vocabulary and grammar (POS tag).
+
+| Tool                  | Description                                                     |
+| --------------------- | --------------------------------------------------------------- |
+| **WordNetLemmatizer** | Uses WordNet to return real lemmas. Needs POS tag for accuracy. |
+
+**Example**: `"testing"` → `"testing"` (as default POS is noun), but `"running"` → `"running"` unless specified as a verb.
+
+---
+
+## ✅ CODE EXPLANATION
+
+```python
+# Importing required modules
+from nltk.tokenize import word_tokenize, TreebankWordTokenizer, TweetTokenizer, MWETokenizer, WhitespaceTokenizer, RegexpTokenizer
+from nltk.stem import PorterStemmer, SnowballStemmer, WordNetLemmatizer
+import nltk
+
+# Downloading required resources for tokenization and lemmatization
+nltk.download('punkt')        # For word_tokenize()
+nltk.download('wordnet')      # For lemmatization
+nltk.download('omw-1.4')      # WordNet multilingual support
+
+# Sample text
+text = "Hello there! I'm testing various tokenization methods: whitespace, punctuation-based, treebank, tweet & MWE."
+```
+
+### 🔹 Tokenization Part
+
+```python
+# Tokenizers dictionary with names
+tokenizers = {
+    "Whitespace": WhitespaceTokenizer(),
+    "Punctuation-based": RegexpTokenizer(r'\w+'),  # removes punctuation
+    "Treebank": TreebankWordTokenizer(),
+    "Tweet": TweetTokenizer(),
+    "MWE": MWETokenizer([('testing', 'various'), ('tokenization', 'methods')])  # combine these as one token
+}
+
+# Apply each tokenizer and print the tokens
+print("\n--- Tokenization ---")
+tokens = {}
+for name, tokenizer in tokenizers.items():
+    if name == "MWE":
+        tokens[name] = tokenizer.tokenize(word_tokenize(text))  # needs initial token list
+    else:
+        tokens[name] = tokenizer.tokenize(text)
+    print(f"{name} Tokenization: {tokens[name]}")
+```
+
+### 🔹 Stemming Part
+
+```python
+# Using punctuation-based tokens for stemming and lemmatization
+base_tokens = tokens["Punctuation-based"]
+
+print("\n--- Stemming ---")
+for stemmer_name, stemmer in {
+    "Porter": PorterStemmer(),
+    "Snowball": SnowballStemmer("english")
+}.items():
+    stems = [stemmer.stem(w) for w in base_tokens]
+    print(f"{stemmer_name} Stemming: {stems}")
+```
+
+### 🔹 Lemmatization Part
+
+```python
+print("\n--- Lemmatization ---")
+lemmatizer = WordNetLemmatizer()
+lemmatized = [lemmatizer.lemmatize(w) for w in base_tokens]  # No POS passed, so assumes noun
+print(f"Lemmatization: {lemmatized}")
+```
+
+---
+
+## 💬 Viva Questions You May Be Asked
+
+| Question                                                          | Expected Answer                                                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| What is tokenization?                                             | Splitting text into smaller units (tokens), like words or punctuation.                     |
+| What's the difference between whitespace and Treebank tokenizers? | Whitespace splits on spaces only; Treebank handles punctuation and contractions.           |
+| What is stemming?                                                 | Cutting off suffixes to get the root of a word.                                            |
+| Difference between Porter and Snowball stemmer?                   | Snowball is newer, more aggressive, and multilingual.                                      |
+| What is lemmatization?                                            | Reducing a word to its base form using grammar and a dictionary (e.g., "better" → "good"). |
+| Why use MWETokenizer?                                             | To treat fixed phrases like "New York" or "machine learning" as single tokens.             |
+| Which is more accurate: stemming or lemmatization?                | Lemmatization, because it gives real words using grammar rules.                            |
+
+---
+
+You're working on **morphological analysis** using **stemming**, **lemmatization**, and the **Add-Delete Table** approach. Let me break it down in an easy and exam-friendly way.
+
+---
+
+## 🧠 Theory: What is Morphology?
+
+* **Morphology** is the study of how words are formed from **morphemes** (smallest meaningful units).
+* It includes **inflection** (e.g., *walk → walked*) and **derivation** (e.g., *kind → kindness*).
+* Morphemes can be:
+
+  * **Root/Base**: main part of the word (`play` in `playing`)
+  * **Prefix**: added before (`un-` in `unhappy`)
+  * **Suffix**: added after (`-ing`, `-ness`)
+
+---
+
+## 🔍 Add-Delete Table (Morphological Analysis Table)
+
+We'll now modify your code to include an "Add-Delete Table" explaining what morphological operation was done (like removing `-ing` or adding `-ness`).
+
+---
+
+### ✅ Final Code with Add-Delete Table:
+
+```python
+import nltk
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+
+# Download required data
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
+# Initialize tools
+stemmer = PorterStemmer()
+lemmatizer = WordNetLemmatizer()
+
+# Words and their part-of-speech
+words_with_pos = [
+    ("playing", "v"),
+    ("happily", "r"),
+    ("governed", "v"),
+    ("nationally", "r"),
+    ("running", "v"),
+    ("kindness", "n")
+]
+
+# Header
+print("Word        | Stem      | Lemma")
+print("--------------------------------")
+for word, pos in words_with_pos:
+    stem = stemmer.stem(word)
+    lemma = lemmatizer.lemmatize(word, pos=pos)
+    print(f"{word:<11} | {stem:<9} | {lemma}")
+
+    # Add-Delete Explanation (Simple rules for learning)
+    print("  Morphology (Add-Delete Table):")
+    if word.endswith("ing"):
+        print("   - Delete: 'ing' → Base verb (e.g., playing → play)")
+    elif word.endswith("ly"):
+        print("   - Delete: 'ly' → Base adjective (e.g., happily → happy)")
+    elif word.endswith("ed"):
+        print("   - Delete: 'ed' → Base verb (e.g., governed → govern)")
+    elif word.endswith("ness"):
+        print("   - Delete: 'ness' → Base adjective (e.g., kindness → kind)")
+    elif word.endswith("ally"):
+        print("   - Delete: 'ally' → Base word (e.g., nationally → nation)")
+    else:
+        print("   - No major change")
+    print()
+```
+
+---
+
+### 🧾 Sample Output (for understanding):
+
+```
+Word        | Stem      | Lemma
+--------------------------------
+playing     | play      | play
+  Morphology (Add-Delete Table):
+   - Delete: 'ing' → Base verb (e.g., playing → play)
+
+happily     | happili   | happily
+  Morphology (Add-Delete Table):
+   - Delete: 'ly' → Base adjective (e.g., happily → happy)
+
+governed    | govern    | govern
+  Morphology (Add-Delete Table):
+   - Delete: 'ed' → Base verb (e.g., governed → govern)
+
+nationally  | nation    | nationally
+  Morphology (Add-Delete Table):
+   - Delete: 'ally' → Base word (e.g., nationally → nation)
+
+running     | run       | run
+  Morphology (Add-Delete Table):
+   - Delete: 'ing' → Base verb (e.g., running → run)
+
+kindness    | kind      | kindness
+  Morphology (Add-Delete Table):
+   - Delete: 'ness' → Base adjective (e.g., kindness → kind)
+```
+
+---
+
+## 🎯 What You Learn
+
+| Concept              | Explanation                                                                         |
+| -------------------- | ----------------------------------------------------------------------------------- |
+| **Stemming**         | Removes suffixes without grammar. `"happily"` → `"happili"` (not always meaningful) |
+| **Lemmatization**    | Gives dictionary form using grammar. `"governed"` → `"govern"`                      |
+| **Add-Delete Table** | Helps explain how the word was built using morphemes like `-ing`, `-ness`           |
+
+---
+
+
+
